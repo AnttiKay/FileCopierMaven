@@ -1,8 +1,14 @@
-package app.fileCopier;
+package app.fileCopier.threads;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+
+import app.fileCopier.FileCopier;
+import app.fileCopier.SynchronizedStack;
+
+
 
 public class FileOutput extends Thread {
     private FileOutputStream outputStream;
@@ -14,9 +20,15 @@ public class FileOutput extends Thread {
     // Parameters are: the stack buffer allocated to this thread, path to the input
     // file, parent of this thread.
     public FileOutput(SynchronizedStack<Integer> stack, String path, FileCopier parent) {
-        this.path = path;
-        this.buffer = stack;
-        this.parent = parent;
+        if (stack == null || parent == null || path.equals("")) {
+            parent.setEndOfStream(true);
+            throw new IllegalArgumentException();
+        } else {
+            this.path = path;
+            this.buffer = stack;
+            this.parent = parent;
+        }
+
     }
 
     // Thread runs until the input file has been read. Every time the buffer is
@@ -41,7 +53,7 @@ public class FileOutput extends Thread {
         synchronized (buffer) {
 
             while (!buffer.isFull() && !parent.isEndOfStream()) {
-                //System.out.println("Waiting for full buffer.");
+                // System.out.println("Waiting for full buffer.");
                 buffer.wait();
             }
 
@@ -60,7 +72,6 @@ public class FileOutput extends Thread {
                 outputStream = new FileOutputStream(new File(path), true);
                 outputStreamWriter = new OutputStreamWriter(outputStream);
                 for (int c : array) {
-                    //System.out.print((char) c);
                     outputStreamWriter.write(c);
                 }
 
@@ -77,7 +88,7 @@ public class FileOutput extends Thread {
                 }
 
             }
-            //We notify the other thread, that the buffer is empty.
+            // We notify the other thread, that the buffer is empty.
             buffer.notifyAll();
 
         }

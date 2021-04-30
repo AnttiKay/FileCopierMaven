@@ -33,20 +33,20 @@
         </rowConstraints>
          <children>
             <Label text="Select file to be copied." />
-            <TextField fx:id="FileToCopyTextField" prefHeight="25.0" prefWidth="141.0" GridPane.rowIndex="1" />
-            <Button fx:id="BrowseFilesButton" mnemonicParsing="false" onAction="#browseFIles" text="Browse" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <TextField fx:id="fileToCopyTextField" prefHeight="25.0" prefWidth="141.0" GridPane.rowIndex="1" />
+            <Button fx:id="browseFilesButton" mnemonicParsing="false" onAction="#browseFIles" text="Browse" GridPane.columnIndex="1" GridPane.rowIndex="1">
                <GridPane.margin>
                   <Insets left="10.0" />
                </GridPane.margin>
             </Button>
-            <Button fx:id="OpenFolderToCopiedFileButton" mnemonicParsing="false" onAction="#openFileFolder" text="Open folder" GridPane.columnIndex="1" GridPane.rowIndex="3">
+            <Button fx:id="openFolderToCopiedFileButton" mnemonicParsing="false" onAction="#openFileFolder" text="Save file as..." GridPane.columnIndex="1" GridPane.rowIndex="3">
                <GridPane.margin>
                   <Insets left="10.0" />
                </GridPane.margin>
             </Button>
-            <Label text="Copied file path." GridPane.rowIndex="2" />
-            <TextField fx:id="CopiedFilePathTextField" GridPane.rowIndex="3" />
-            <Button fx:id="CopyFile" mnemonicParsing="false" onAction="#copyFile" text="CopyFile" GridPane.columnIndex="1" GridPane.rowIndex="4">
+            <Label text="Select copied file directory and name" GridPane.rowIndex="2" />
+            <TextField fx:id="copiedFilePathTextField" GridPane.rowIndex="3" />
+            <Button fx:id="copyFile" mnemonicParsing="false" onAction="#copyFile" text="CopyFile" GridPane.columnIndex="1" GridPane.rowIndex="4">
                <GridPane.margin>
                   <Insets left="10.0" />
                </GridPane.margin>

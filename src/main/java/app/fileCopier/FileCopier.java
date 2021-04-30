@@ -1,6 +1,9 @@
 package app.fileCopier;
 import java.io.File;
 
+import app.fileCopier.threads.FileInput;
+import app.fileCopier.threads.FileOutput;
+
 public class FileCopier {
     private SynchronizedStack<Integer> stack;
     private String inputFilePath;
@@ -29,7 +32,7 @@ public class FileCopier {
 
     // This method is synchronized, so that other threads have to wait until the
     // copying is done.
-    public synchronized void copyFile() {
+    public synchronized boolean copyFile() {
         File outputFile = new File(outputFilePath);
 
         while (outputFile.isFile() || outputFilePath.equals("")) {
@@ -51,7 +54,9 @@ public class FileCopier {
         } catch (InterruptedException e) {
             System.err.println("FileOutput thread interrupted.");
             e.printStackTrace();
+            return false;
         }
+        return true;
     }
 
     public String getOutputFilePath() {

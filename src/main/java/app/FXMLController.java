@@ -12,48 +12,50 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
-import java.awt.Desktop;
+import javafx.stage.FileChooser.ExtensionFilter;
 
 public class FXMLController implements Initializable {
 
     @FXML
-    private TextField FileToCopyTextField;
+    private TextField fileToCopyTextField;
 
     @FXML
-    private Button BrowseFilesButton;
+    private Button browseFilesButton;
 
     @FXML
-    private Button OpenFolderToCopiedFileButton;
+    private Button openFolderToCopiedFileButton;
 
     @FXML
-    private TextField CopiedFilePathTextField;
+    private TextField copiedFilePathTextField;
 
     @FXML
-    private Button CopyFile;
+    private Button copyFile;
 
     @FXML
-    private Label ShowCopySuccessLabel;
+    private Label ShowCopySuccessLabel;;
 
     private FileCopier fileCopier;
+    private FileChooser fileChooser;
 
     @FXML
     void browseFIles(ActionEvent event) {
 
-        FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select File");
-        File fileToCopy = fileChooser.showOpenDialog(FileToCopyTextField.getScene().getWindow());
+        File fileToCopy = fileChooser.showOpenDialog(fileToCopyTextField.getScene().getWindow());
 
-        FileToCopyTextField.setText(fileToCopy.getAbsolutePath());
+        if (fileToCopy != null) {
+            fileToCopyTextField.setText(fileToCopy.getAbsolutePath());
+        }
     }
 
     @FXML
     void copyFile(ActionEvent event) {
-        fileCopier.setInputFilePath(FileToCopyTextField.getText());
-        if (!CopiedFilePathTextField.getText().equals("")) {
-            fileCopier.setOutputFilePath(CopiedFilePathTextField.getText());
+        fileCopier.setInputFilePath(fileToCopyTextField.getText());
+        if (!copiedFilePathTextField.getText().equals("")) {
+            fileCopier.setOutputFilePath(copiedFilePathTextField.getText());
         } else {
-            CopiedFilePathTextField.setText(FileCopier.createOutputFileName(FileToCopyTextField.getText()));
-            fileCopier.setOutputFilePath(CopiedFilePathTextField.getText());
+            copiedFilePathTextField.setText(FileCopier.createOutputFileName(fileToCopyTextField.getText()));
+            fileCopier.setOutputFilePath(copiedFilePathTextField.getText());
         }
         fileCopier.copyFile();
         ShowCopySuccessLabel.setText("File copied successfully.");
@@ -61,21 +63,22 @@ public class FXMLController implements Initializable {
 
     @FXML
     void openFileFolder(ActionEvent event) {
-        if (!CopiedFilePathTextField.getText().equals("")) {
-            File copiedFile = new File(CopiedFilePathTextField.getText());
-            if (copiedFile.isFile()) {
-                Desktop.getDesktop().browseFileDirectory(copiedFile);
-            } else {
-                ShowCopySuccessLabel.setText("Error: Path to copied file is not a file.");
-            }
-        } else {
-            ShowCopySuccessLabel.setText("Error: Path to copied file is empty");
+        fileChooser.setTitle("Save file as...");
+
+        File copiedFile = fileChooser.showSaveDialog(fileToCopyTextField.getScene().getWindow());
+        if (copiedFile != null) {
+            copiedFilePathTextField.setText(copiedFile.getAbsolutePath());
         }
+
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         fileCopier = new FileCopier();
+        fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters()
+        .addAll(new ExtensionFilter("Text Files", "*.txt"),
+                new ExtensionFilter("All Files", "*.*"));
 
     }
 }

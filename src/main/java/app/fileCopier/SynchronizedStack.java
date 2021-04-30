@@ -33,14 +33,18 @@ public class SynchronizedStack<T> {
     public synchronized boolean isEmpty() {
         return this.dequeStore.isEmpty();
     }
-
-    public int getStackCapacity() {
+    
+    public synchronized int getStackCapacity() {
         return stackCapacity;
     }
 
     // This function is used that that the threads know when the stack is full. When full writer thread can take the whole chunk
     // from the stack and empty it.
-    public boolean isFull() {
+    public synchronized boolean isFull() {
         return getStackCapacity() == size();
+    }
+    
+    public synchronized void clear(){
+        this.dequeStore.clear();
     }
 }
