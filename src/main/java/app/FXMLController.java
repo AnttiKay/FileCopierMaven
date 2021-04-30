@@ -57,8 +57,13 @@ public class FXMLController implements Initializable {
             copiedFilePathTextField.setText(FileCopier.createOutputFileName(fileToCopyTextField.getText()));
             fileCopier.setOutputFilePath(copiedFilePathTextField.getText());
         }
-        fileCopier.copyFile();
-        ShowCopySuccessLabel.setText("File copied successfully.");
+        boolean success = fileCopier.copyFile();
+        if (success) {
+            ShowCopySuccessLabel.setText("File copied successfully.");
+
+        }else{
+            ShowCopySuccessLabel.setText("Error copying file.");
+        }
     }
 
     @FXML
@@ -76,8 +81,7 @@ public class FXMLController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         fileCopier = new FileCopier();
         fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters()
-        .addAll(new ExtensionFilter("Text Files", "*.txt"),
+        fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Text Files", "*.txt"),
                 new ExtensionFilter("All Files", "*.*"));
 
     }
