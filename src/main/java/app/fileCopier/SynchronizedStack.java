@@ -43,7 +43,6 @@ public class SynchronizedStack<T> {
     public synchronized boolean isFull() {
         return getStackCapacity() == size();
     }
-    
     public synchronized void clear(){
         this.dequeStore.clear();
     }

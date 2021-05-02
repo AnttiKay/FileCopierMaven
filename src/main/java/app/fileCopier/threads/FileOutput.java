@@ -4,29 +4,25 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-
-import app.fileCopier.FileCopier;
 import app.fileCopier.SynchronizedStack;
-
 
 
 public class FileOutput extends Thread {
     private FileOutputStream outputStream;
     private OutputStreamWriter outputStreamWriter;
     private SynchronizedStack<Integer> buffer;
-    private FileCopier parent;
     private String path = "";
+    private boolean endOfStream = false;
 
     // Parameters are: the stack buffer allocated to this thread, path to the input
-    // file, parent of this thread.
-    public FileOutput(SynchronizedStack<Integer> stack, String path, FileCopier parent) {
-        if (stack == null || parent == null || path.equals("")) {
-            parent.setEndOfStream(true);
+    // file, parent of this thread. Thread stops as it finds -1 in the stack to signify end of stream.
+    public FileOutput(SynchronizedStack<Integer> stack, String path) {
+        if (stack == null || path.equals("")) {
+            setEndOfStream(true);
             throw new IllegalArgumentException();
         } else {
             this.path = path;
             this.buffer = stack;
-            this.parent = parent;
         }
 
     }
@@ -36,7 +32,7 @@ public class FileOutput extends Thread {
     // specified as the output file
     public void run() {
         try {
-            while (!parent.isEndOfStream()) {
+            while (!endOfStream) {
                 writeBuffer();
             }
             // To catch the final time, when buffer may be partially filled.
@@ -51,10 +47,19 @@ public class FileOutput extends Thread {
     // output file.
     public void writeBuffer() throws InterruptedException {
         synchronized (buffer) {
-
-            while (!buffer.isFull() && !parent.isEndOfStream()) {
-                // System.out.println("Waiting for full buffer.");
+            // We wait until the other thread notifies this one.
+            // We check the first character of the buffer, if it is -1 then it is end of the
+            // stream, as otherwise the buffer contains only positive integers. We also
+            // remove the end of the line character from the buffer.
+            while (!buffer.isFull() && !endOfStream) {
                 buffer.wait();
+
+                if (buffer.size() > 0) {
+                    if(buffer.peek() == -1){
+                        setEndOfStream(true);
+                        buffer.pop();
+                    }
+                }
             }
 
             int[] array = new int[buffer.size()];
@@ -63,6 +68,7 @@ public class FileOutput extends Thread {
             // order.
             for (int i = (buffer.size() - 1); i > -1; i--) {
                 array[i] = buffer.pop();
+                //System.out.print(array[i]);
             }
 
             try {
@@ -71,6 +77,8 @@ public class FileOutput extends Thread {
                 // append instead.
                 outputStream = new FileOutputStream(new File(path), true);
                 outputStreamWriter = new OutputStreamWriter(outputStream);
+                
+                // We append the characters to the outputStream file.
                 for (int c : array) {
                     outputStreamWriter.write(c);
                 }
@@ -93,5 +101,9 @@ public class FileOutput extends Thread {
 
         }
 
+    }
+
+    public void setEndOfStream(boolean endofStream) {
+        this.endOfStream = endofStream;
     }
 }

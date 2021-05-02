@@ -6,24 +6,23 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import app.fileCopier.FileCopier;
 import app.fileCopier.SynchronizedStack;
-
 
 
 public class FileInput extends Thread {
     private FileInputStream inputStream;
     private InputStreamReader inputStreamReader;
     private SynchronizedStack<Integer> buffer;
-    private FileCopier parent;
+    private boolean endOfStream = false;
 
     // Parameters are: the stack buffer allocated to this thread, path to the input
-    // file, parent of this thread.
-    public FileInput(SynchronizedStack<Integer> stack, String path, FileCopier parent) {
-        if (stack == null || parent == null || path.equals("")) {
+    // file, parent of this thread. At the end pushes -1 to stack to signify end of stream.
+    public FileInput(SynchronizedStack<Integer> stack, String path) {
+        if (stack == null || path.equals("")) {
             setEndOfStream(true);
             throw new IllegalArgumentException();
         } else {
+
             try {
                 inputStream = new FileInputStream(new File(path));
             } catch (FileNotFoundException e) {
@@ -35,7 +34,6 @@ public class FileInput extends Thread {
             inputStreamReader = new InputStreamReader(inputStream);
 
             this.buffer = stack;
-            this.parent = parent;
         }
 
     }
@@ -46,7 +44,7 @@ public class FileInput extends Thread {
     public void run() {
 
         try {
-            while (!parent.isEndOfStream()) {
+            while (!endOfStream) {
                 fillBuffer();
             }
         } catch (IOException e) {
@@ -63,7 +61,6 @@ public class FileInput extends Thread {
                 e.printStackTrace();
             }
         }
-
     }
 
     // This function fills the stack buffer allocated to this thread with read
@@ -74,13 +71,14 @@ public class FileInput extends Thread {
             while (!buffer.isEmpty()) {
                 buffer.wait();
             }
-            while (!buffer.isFull() && !parent.isEndOfStream()) {
+
+            while (!buffer.isFull() && !endOfStream) {
                 character = inputStreamReader.read();
-                if (character != -1) {
-                    buffer.push(character);
-                } else {
+                buffer.push(character);
+                if (character == -1) {
                     setEndOfStream(true);
                 }
+
             }
             // We notify the other thread, that the buffer is full.
             buffer.notifyAll();
@@ -88,9 +86,9 @@ public class FileInput extends Thread {
 
     }
 
-    // This function informs the parent and the other class, that the input file has
-    // been fully read. This means, all that remains to be copied are in the buffer.
+    // This function informs the thread, that the input file has
+    // been fully read.
     public void setEndOfStream(boolean endOfStream) {
-        parent.setEndOfStream(endOfStream);
+        this.endOfStream = endOfStream;
     }
 }
